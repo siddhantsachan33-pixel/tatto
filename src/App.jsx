@@ -72,7 +72,7 @@ export default function App() {
   if (route === '#admin') {
     return (
       <AdminDashboard 
-        onClose={() => { window.location.hash = ''; }} 
+        onClose={() => { window.location.hash = 'shop-all'; }} 
       />
     );
   }
