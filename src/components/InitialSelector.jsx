@@ -9,33 +9,33 @@ export default function InitialSelector() {
 
   const handleAddToCart = () => {
     // Create a mock product object representing the Custom Initial Tattoo
-    const customProduct = {
-      id: 'custom-initial',
-      name: `Signature Heart Initial '${selectedLetter}'`,
-      price: 299,
-      originalPrice: 499,
-      size: '2 x 2 inches',
-      image1: 'https://images.unsplash.com/photo-1590246814883-57f511e76523?auto=format&fit=crop&q=80&w=600',
+      const customProduct = {
+        id: 'custom-initial',
+        name: `Signature Heart Initial '${selectedLetter}'`,
+        price: 299,
+        originalPrice: 499,
+        size: '2 x 2 inches',
+        image1: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&q=80&w=600',
+      };
+      addToCart(customProduct, 1, selectedLetter);
     };
-    addToCart(customProduct, 1, selectedLetter);
-  };
-
-  return (
-    <section className="section-padding" id="initial-selector" style={{ background: '#fafafa' }}>
-      <div className="container">
-        <div className="section-header">
-          <p className="section-subtitle">Interactive Customizer</p>
-          <h2 className="section-title">Signature Initial Heart</h2>
-        </div>
-
-        <div className="initial-container">
-          {/* Left Column: Dynamic Preview */}
-          <div className="initial-preview-panel">
-            <img 
-              src="https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80&w=600" 
-              alt="Tattoo Placement Skin Mockup" 
-              className="initial-preview-bg"
-            />
+  
+    return (
+      <section className="section-padding" id="initial-selector" style={{ background: '#fafafa' }}>
+        <div className="container">
+          <div className="section-header">
+            <p className="section-subtitle">Interactive Customizer</p>
+            <h2 className="section-title">Signature Initial Heart</h2>
+          </div>
+  
+          <div className="initial-container">
+            {/* Left Column: Dynamic Preview */}
+            <div className="initial-preview-panel">
+              <img 
+                src="https://images.unsplash.com/photo-1550537687-c91072c4792d?auto=format&fit=crop&q=80&w=600" 
+                alt="Tattoo Placement Skin Mockup" 
+                className="initial-preview-bg"
+              />
             {/* Overlay Heart SVG with Custom Letter */}
             <div className="initial-overlay-letter animate-fade-in" key={selectedLetter}>
               ♡ {selectedLetter}
