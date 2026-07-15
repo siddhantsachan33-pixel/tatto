@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+
 
 export default function AdminDashboard({ onClose }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
