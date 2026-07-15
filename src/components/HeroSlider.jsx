@@ -6,21 +6,21 @@ const slides = [
     title: "Commitment-Free Body Art",
     cta: "Shop The Collection",
     link: "#shop-all",
-    bg: "https://images.unsplash.com/photo-1590246814883-57f511e76523?auto=format&fit=crop&q=80&w=1600"
+    bg: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=1600"
   },
   {
     subtitle: "Looks 100% Like Real Ink",
     title: "Zero Pain. Zero Regrets.",
     cta: "Explore Bestsellers",
     link: "#tabbed-collection",
-    bg: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80&w=1600"
+    bg: "https://images.unsplash.com/photo-1550537687-c91072c4792d?auto=format&fit=crop&q=80&w=1600"
   },
   {
     subtitle: "Personalized Custom Tattoos",
     title: "Signature Letter Initials",
     cta: "Customize Yours",
     link: "#initial-selector",
-    bg: "https://images.unsplash.com/photo-1550537687-c91072c4792d?auto=format&fit=crop&q=80&w=1600"
+    bg: "https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&q=80&w=1600"
   }
 ];
 
