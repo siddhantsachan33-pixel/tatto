@@ -16,6 +16,8 @@ import CheckoutModal from './components/CheckoutModal';
 import AdminDashboard from './components/AdminDashboard';
 import { products as defaultProducts } from './data/products';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+
 export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [productsList, setProductsList] = useState(defaultProducts);
@@ -35,7 +37,7 @@ export default function App() {
   useEffect(() => {
     const fetchBackendData = async () => {
       try {
-        const prodRes = await fetch('http://localhost:5000/api/products');
+        const prodRes = await fetch(`${API_BASE}/products`);
         if (prodRes.ok) {
           const prodData = await prodRes.json();
           if (prodData && prodData.length > 0) {
@@ -43,7 +45,7 @@ export default function App() {
           }
         }
         
-        const testRes = await fetch('http://localhost:5000/api/testimonials');
+        const testRes = await fetch(`${API_BASE}/testimonials`);
         if (testRes.ok) {
           const testData = await testRes.json();
           if (testData && testData.length > 0) {
@@ -57,6 +59,7 @@ export default function App() {
     
     fetchBackendData();
   }, [route]);
+
 
   // Filter products for the primary "Shop All" grid based on category selection
   const displayedProducts = productsList.filter((prod) => {
