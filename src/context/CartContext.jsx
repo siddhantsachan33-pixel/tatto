@@ -1,7 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const CartContext = createContext();
-const API_BASE = 'http://localhost:5000/api';
+// Dynamically resolve API Base (local development vs. Cloudflare production env variables)
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
