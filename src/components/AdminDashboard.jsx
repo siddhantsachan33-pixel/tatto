@@ -77,6 +77,7 @@ export default function AdminDashboard({ onClose }) {
     localStorage.removeItem('inkup_admin_token');
     setToken('');
     setIsAuthenticated(false);
+    onClose();
   };
 
   const handleLogin = async (e) => {
@@ -112,6 +113,7 @@ export default function AdminDashboard({ onClose }) {
     localStorage.removeItem('inkup_admin_token');
     setToken('');
     setIsAuthenticated(false);
+    onClose();
   };
 
   useEffect(() => {
