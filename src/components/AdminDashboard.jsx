@@ -6,7 +6,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 export default function AdminDashboard({ onClose }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState(localStorage.getItem('inkup_admin_token') || '');
+  const [token, setToken] = useState(localStorage.getItem('seedink_admin_token') || '');
   const [activeTab, setActiveTab] = useState('products');
   
   // Data States
@@ -74,9 +74,10 @@ export default function AdminDashboard({ onClose }) {
 
   const handleSessionExpired = () => {
     alert('Admin session expired. Please log in again.');
-    localStorage.removeItem('inkup_admin_token');
+    localStorage.removeItem('seedink_admin_token');
     setToken('');
     setIsAuthenticated(false);
+    onClose();
   };
 
   const handleLogin = async (e) => {
@@ -90,7 +91,7 @@ export default function AdminDashboard({ onClose }) {
       
       const data = await res.json();
       if (res.ok && data.token) {
-        localStorage.setItem('inkup_admin_token', data.token);
+        localStorage.setItem('seedink_admin_token', data.token);
         setToken(data.token);
         setIsAuthenticated(true);
         setPassword('');
@@ -109,9 +110,10 @@ export default function AdminDashboard({ onClose }) {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } catch (e) {}
-    localStorage.removeItem('inkup_admin_token');
+    localStorage.removeItem('seedink_admin_token');
     setToken('');
     setIsAuthenticated(false);
+    onClose();
   };
 
   useEffect(() => {
