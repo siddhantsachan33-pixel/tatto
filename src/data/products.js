@@ -9,7 +9,6 @@ export const categories = [
 ];
 
 export const products = [
-  // Bestsellers & Spiritual
   {
     id: 'p1',
     name: 'Mandala Harmony',
@@ -18,8 +17,8 @@ export const products = [
     originalPrice: 599,
     rating: 4.9,
     reviewsCount: 142,
-    image1: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1508186227448-7a6cf6f6572e?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=600',
     size: '3 x 3 inches',
     description: 'A beautiful mandala design representing inner peace, unity, and balance. Perfect for wrists, forearms, or ankles.',
     isBestseller: true,
@@ -33,14 +32,13 @@ export const products = [
     originalPrice: 699,
     rating: 4.8,
     reviewsCount: 96,
-    image1: 'https://images.unsplash.com/photo-1590246815117-cdd26e601848?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1594385208974-2e75f9d8ab48?auto=format&fit=crop&q=80&w=600',
     image2: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&q=80&w=600',
     size: '4 x 2.5 inches',
     description: 'An intricate gothic dagger entwined with a soft rose, symbolizing power, vulnerability, and resilience.',
     isBestseller: true,
     isNew: true
   },
-  // Typography
   {
     id: 'p3',
     name: 'Amour (Script Lettering)',
@@ -49,14 +47,13 @@ export const products = [
     originalPrice: 449,
     rating: 4.7,
     reviewsCount: 78,
-    image1: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1542727313-4f3e99aa2568?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1581898716766-3d748f3227eb?auto=format&fit=crop&q=80&w=600',
     size: '2 x 1 inches',
     description: 'Elegant French script tattoo reading "Amour" (Love). Minimalist, subtle, and incredibly chic.',
     isBestseller: false,
     isNew: false
   },
-  // Anime
   {
     id: 'p4',
     name: 'Nine-Tails Sigil',
@@ -65,14 +62,13 @@ export const products = [
     originalPrice: 599,
     rating: 4.9,
     reviewsCount: 188,
-    image1: 'https://images.unsplash.com/photo-1612459284270-27b3a394fee7?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1560707303-4e980c87f8af?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1512413313760-441fc5042d15?auto=format&fit=crop&q=80&w=600',
     size: '3.5 x 3.5 inches',
     description: 'The iconic spiral seal of the Nine-Tailed Fox. Must-have body art for true anime fans.',
     isBestseller: true,
     isNew: false
   },
-  // Minimalist
   {
     id: 'p5',
     name: 'Constellation Stars',
@@ -81,14 +77,13 @@ export const products = [
     originalPrice: 499,
     rating: 4.9,
     reviewsCount: 215,
-    image1: 'https://images.unsplash.com/photo-1542727313-4f3e99aa2568?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1611601679655-7c8bc197f0c6?auto=format&fit=crop&q=80&w=600',
     size: '2.5 x 1.5 inches',
     description: 'A cluster of fine line stars and sparkles to adorn your collarbone or wrist.',
     isBestseller: true,
     isNew: false
   },
-  // Gothic
   {
     id: 'p6',
     name: 'Viper Strike',
@@ -98,13 +93,12 @@ export const products = [
     rating: 4.8,
     reviewsCount: 112,
     image1: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1590246815117-cdd26e601848?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1594385208974-2e75f9d8ab48?auto=format&fit=crop&q=80&w=600',
     size: '4 x 2 inches',
     description: 'A sleek, coiled viper ready to strike. Bold black ink styling with sharp, dramatic detailing.',
     isBestseller: false,
     isNew: true
   },
-  // Spiritual
   {
     id: 'p7',
     name: 'Cosmic Unalome',
@@ -113,14 +107,13 @@ export const products = [
     originalPrice: 499,
     rating: 4.8,
     reviewsCount: 65,
-    image1: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1512413313760-441fc5042d15?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1508186227448-7a6cf6f6572e?auto=format&fit=crop&q=80&w=600',
     size: '3 x 1.5 inches',
     description: 'The Unalome symbol representing the path to enlightenment, crowned with a crescent moon and stars.',
     isBestseller: false,
     isNew: false
   },
-  // Typography
   {
     id: 'p8',
     name: 'Wildflower (Script)',
@@ -129,14 +122,13 @@ export const products = [
     originalPrice: 449,
     rating: 4.6,
     reviewsCount: 43,
-    image1: 'https://images.unsplash.com/photo-1542727313-4f3e99aa2568?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1612459284270-27b3a394fee7?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1542727313-4f3e99aa2568?auto=format&fit=crop&q=80&w=600',
     size: '3 x 1 inches',
     description: 'Elegant script lettering reading "wildflower" with a tiny blooming flower stem at the end.',
     isBestseller: false,
     isNew: true
   },
-  // Shiva Spiritual Collection
   {
     id: 'p9',
     name: 'Shiva Trishul',
@@ -145,8 +137,8 @@ export const products = [
     originalPrice: 699,
     rating: 4.9,
     reviewsCount: 234,
-    image1: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1560707303-4e980c87f8af?auto=format&fit=crop&q=80&w=600',
     size: '4 x 2 inches',
     description: 'The sacred Trishul (Trident) of Lord Shiva with damaru drum and serpent coiled around it. Symbol of destruction of evil and cosmic power.',
     isBestseller: true,
@@ -160,8 +152,8 @@ export const products = [
     originalPrice: 799,
     rating: 4.9,
     reviewsCount: 178,
-    image1: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1508186227448-7a6cf6f6572e?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&q=80&w=600',
     size: '5 x 4 inches',
     description: 'Lord Shiva as Nataraja performing the cosmic dance of creation and destruction. Intricate linework capturing divine energy and movement.',
     isBestseller: true,
@@ -175,8 +167,8 @@ export const products = [
     originalPrice: 599,
     rating: 4.8,
     reviewsCount: 156,
-    image1: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1512413313760-441fc5042d15?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&q=80&w=600',
     size: '3 x 2 inches',
     description: "The all-seeing third eye of Mahadev with crescent moon and sacred Om symbol. Represents inner wisdom, enlightenment, and divine consciousness.",
     isBestseller: false,
@@ -190,8 +182,8 @@ export const products = [
     originalPrice: 499,
     rating: 4.7,
     reviewsCount: 98,
-    image1: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1581898716766-3d748f3227eb?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=600',
     size: '2 x 1.5 inches',
     description: 'Sacred tripundra tilak lines with rudraksha beads and Om symbol. A minimalist tribute to Mahadev, perfect for forearms and wrists.',
     isBestseller: false,
@@ -208,7 +200,7 @@ export const bundles = [
     itemsCount: 3,
     rating: 4.9,
     reviewsCount: 88,
-    image: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
+    image: 'https://images.unsplash.com/photo-1508186227448-7a6cf6f6572e?auto=format&fit=crop&q=80&w=600',
     description: 'Includes Mandala Harmony, Cosmic Unalome, and Lotus Bloom semi-permanent tattoos.'
   },
   {
@@ -219,7 +211,7 @@ export const bundles = [
     itemsCount: 3,
     rating: 4.8,
     reviewsCount: 64,
-    image: 'https://images.unsplash.com/photo-1590246815117-cdd26e601848?auto=format&fit=crop&q=80&w=600',
+    image: 'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&q=80&w=600',
     description: 'Includes Dagger & Rose, Viper Strike, and Raven Skull semi-permanent tattoos.'
   },
   {
@@ -230,7 +222,7 @@ export const bundles = [
     itemsCount: 3,
     rating: 4.9,
     reviewsCount: 120,
-    image: 'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&q=80&w=600',
+    image: 'https://images.unsplash.com/photo-1533158326339-7f3cf2404354?auto=format&fit=crop&q=80&w=600',
     description: 'Includes Constellation Stars, Amour Script, and Petite Crescent Moon tattoos.'
   }
 ];
