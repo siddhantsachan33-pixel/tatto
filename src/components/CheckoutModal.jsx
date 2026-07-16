@@ -20,6 +20,29 @@ export default function CheckoutModal() {
   const [clientSecret, setClientSecret] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Pre-fill user profile if logged in
+  React.useEffect(() => {
+    if (checkoutOpen) {
+      const savedUserStr = localStorage.getItem('seedink_user_data');
+      if (savedUserStr) {
+        try {
+          const user = JSON.parse(savedUserStr);
+          setShippingInfo(prev => ({
+            ...prev,
+            name: user.name || prev.name,
+            email: user.email || prev.email,
+            phone: user.phone || prev.phone,
+            address: user.address || prev.address,
+            city: user.city || prev.city,
+            pincode: user.pincode || prev.pincode
+          }));
+        } catch (e) {
+          console.error('Error prefilling checkout:', e);
+        }
+      }
+    }
+  }, [checkoutOpen]);
+
   if (!checkoutOpen) return null;
 
   const shippingCost = cartTotal >= 499 ? 0 : 50;
@@ -52,7 +75,18 @@ export default function CheckoutModal() {
   const processPaymentAndOrder = async () => {
     setStatus('loading');
     
+    // Get optional logged-in userId
+    let loggedInUserId = undefined;
+    try {
+      const savedUserStr = localStorage.getItem('seedink_user_data');
+      if (savedUserStr) {
+        const u = JSON.parse(savedUserStr);
+        loggedInUserId = u.id;
+      }
+    } catch (e) {}
+    
     const payload = {
+      userId: loggedInUserId,
       name: shippingInfo.name,
       email: shippingInfo.email,
       phone: shippingInfo.phone,
