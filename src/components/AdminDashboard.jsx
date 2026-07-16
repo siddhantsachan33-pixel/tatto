@@ -14,6 +14,7 @@ export default function AdminDashboard({ onClose }) {
   const [testimonials, setTestimonials] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [leads, setLeads] = useState([]);
 
   // Product Form State
   const [prodForm, setProdForm] = useState({
@@ -66,6 +67,14 @@ export default function AdminDashboard({ onClose }) {
         }
         const data = await res.json();
         if (res.ok) setPayments(data);
+      } else if (tabName === 'leads') {
+        const res = await fetch(`${API_BASE}/leads`, { headers });
+        if (res.status === 401) {
+          handleSessionExpired();
+          return;
+        }
+        const data = await res.json();
+        if (res.ok) setLeads(data);
       }
     } catch (err) {
       console.error(`Error loading data for ${tabName}:`, err);
@@ -215,10 +224,65 @@ export default function AdminDashboard({ onClose }) {
       }
     } catch (err) {
       alert('Network error while deleting product.');
+  };
+
+  /* ==========================================
+     ORDER & SHIPMENT HANDLERS
+     ========================================== */
+  const handleShipOrder = async (orderId) => {
+    const carrier = prompt("Enter shipping carrier (e.g. Delhivery, BlueDart, Indian Post):", "Delhivery");
+    if (!carrier) return;
+    const trackingId = prompt("Enter Tracking ID / AWB Number:");
+    if (!trackingId) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          orderStatus: 'Shipped',
+          carrier,
+          trackingId
+        })
+      });
+      if (res.ok) {
+        alert('Order marked as Shipped!');
+        fetchData('payments');
+      } else {
+        alert('Failed to update order shipment status.');
+      }
+    } catch (e) {
+      alert('Network error updating shipment details.');
     }
   };
 
-  if (!isAuthenticated) {
+  const handleDeliverOrder = async (orderId) => {
+    if (!confirm('Are you sure you want to mark this order as Delivered?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          orderStatus: 'Delivered',
+          paymentStatus: 'Paid'
+        })
+      });
+      if (res.ok) {
+        alert('Order marked as Delivered & Paid!');
+        fetchData('payments');
+      } else {
+        alert('Failed to update delivery status.');
+      }
+    } catch (e) {
+      alert('Network error updating delivery details.');
+    }
+  };
     return (
       <div className="section-padding" style={{ background: '#fafafa', minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
         <div className="bulk-container" style={{ maxWidth: '400px', margin: '0 auto', boxShadow: 'var(--shadow-md)' }}>
@@ -288,22 +352,16 @@ export default function AdminDashboard({ onClose }) {
             Products ({products.length})
           </button>
           <button 
-            className={`tab-btn ${activeTab === 'testimonials' ? 'active' : ''}`}
-            onClick={() => setActiveTab('testimonials')}
-          >
-            Testimonials ({testimonials.length})
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'inquiries' ? 'active' : ''}`}
-            onClick={() => setActiveTab('inquiries')}
-          >
-            B2B Inquiries ({inquiries.length})
-          </button>
-          <button 
             className={`tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
             onClick={() => setActiveTab('payments')}
           >
-            Payments/Orders ({payments.length})
+            Orders & Shipping ({payments.length})
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'leads' ? 'active' : ''}`}
+            onClick={() => setActiveTab('leads')}
+          >
+            Chatbot Leads ({leads.length})
           </button>
         </div>
 
@@ -573,14 +631,15 @@ export default function AdminDashboard({ onClose }) {
                   <th>Items Bought</th>
                   <th>Total Amount</th>
                   <th>Payment Mode</th>
-                  <th>Status</th>
-                  <th>Stripe ID</th>
+                  <th>Payment Status</th>
+                  <th>Shipment Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {payments.length === 0 ? (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', color: '#71717a' }}>No order transactions recorded yet.</td>
+                    <td colSpan="8" style={{ textAlign: 'center', color: '#71717a' }}>No order transactions recorded yet.</td>
                   </tr>
                 ) : (
                   payments.map((pay) => (
@@ -591,6 +650,7 @@ export default function AdminDashboard({ onClose }) {
                           <p style={{ fontWeight: 'bold' }}>{pay.name}</p>
                           <p style={{ color: '#71717a' }}>{pay.email}</p>
                           <p style={{ color: '#71717a' }}>{pay.phone}</p>
+                          <p style={{ color: '#71717a', fontSize: '0.8rem' }}>{pay.address}, {pay.city} - {pay.pincode}</p>
                         </div>
                       </td>
                       <td>
@@ -609,8 +669,95 @@ export default function AdminDashboard({ onClose }) {
                           {pay.paymentStatus}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.75rem', color: '#71717a' }}>
-                        {pay.paymentIntentId || 'N/A'}
+                      <td>
+                        <span className={`comp-badge ${pay.orderStatus === 'Delivered' ? 'green' : pay.orderStatus === 'Shipped' ? 'blue' : 'gray'}`}>
+                          {pay.orderStatus || 'Pending'}
+                        </span>
+                        {pay.orderStatus === 'Shipped' && (
+                          <div style={{ fontSize: '0.75rem', color: '#71717a', marginTop: '4px' }}>
+                            {pay.carrier}: {pay.trackingId}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {(!pay.orderStatus || pay.orderStatus === 'Pending') && (
+                            <button 
+                              onClick={() => handleShipOrder(pay._id)}
+                              style={{ padding: '6px 12px', background: 'var(--color-accent)', color: 'var(--color-dark)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                            >
+                              Ship Order
+                            </button>
+                          )}
+                          {pay.orderStatus === 'Shipped' && (
+                            <button 
+                              onClick={() => handleDeliverOrder(pay._id)}
+                              style={{ padding: '6px 12px', background: '#0ca678', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+                            >
+                              Deliver Order
+                            </button>
+                          )}
+                          {pay.orderStatus === 'Delivered' && (
+                            <span style={{ fontSize: '0.8rem', color: '#0ca678', fontWeight: 'bold' }}>Completed ✓</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* TAB 5: CHATBOT LEADS */}
+        {activeTab === 'leads' && (
+          <div className="comparison-container" style={{ background: '#ffffff', marginTop: '24px' }}>
+            <table className="comp-table">
+              <thead>
+                <tr>
+                  <th>Customer Info</th>
+                  <th>Tattoo Request Idea</th>
+                  <th>Size & Placement</th>
+                  <th>Received Date</th>
+                  <th>Conversation History</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', color: '#71717a' }}>No chatbot leads captured yet.</td>
+                  </tr>
+                ) : (
+                  leads.map((lead) => (
+                    <tr key={lead._id}>
+                      <td>
+                        <div style={{ fontSize: '0.85rem' }}>
+                          <p style={{ fontWeight: 'bold' }}>{lead.name}</p>
+                          {lead.email && <p style={{ color: '#71717a' }}>{lead.email}</p>}
+                          {lead.phone && <p style={{ color: '#71717a' }}>{lead.phone}</p>}
+                        </div>
+                      </td>
+                      <td style={{ fontWeight: 'bold' }}>{lead.tattooIdea}</td>
+                      <td>
+                        <div style={{ fontSize: '0.8rem' }}>
+                          {lead.size && <p>Size: {lead.size}</p>}
+                          {lead.placement && <p>Placement: {lead.placement}</p>}
+                        </div>
+                      </td>
+                      <td>{new Date(lead.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <button 
+                          onClick={() => {
+                            const chatText = lead.chatHistory
+                              .map(msg => `${msg.sender === 'user' ? 'Customer' : 'Bot'}: ${msg.text}`)
+                              .join('\n\n');
+                            alert(chatText || 'No chat transcript recorded.');
+                          }}
+                          style={{ padding: '6px 12px', background: 'rgba(0,0,0,0.06)', color: 'var(--color-dark)', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                        >
+                          View Chat History ({lead.chatHistory?.length || 0} messages)
+                        </button>
                       </td>
                     </tr>
                   ))
