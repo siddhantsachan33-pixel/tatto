@@ -6,7 +6,7 @@ const slides = [
     title: "Commitment-Free Body Art",
     cta: "Shop The Collection",
     link: "#shop-all",
-    bg: "https://images.unsplash.com/photo-1590246815117-cdd26e601848?auto=format&fit=crop&q=80&w=1600"
+    bg: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=1600"
   },
   {
     subtitle: "Looks 100% Like Real Ink",
@@ -20,7 +20,7 @@ const slides = [
     title: "Signature Letter Initials",
     cta: "Customize Yours",
     link: "#initial-selector",
-    bg: "https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&q=80&w=1600"
+    bg: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=1600"
   }
 ];
 
@@ -43,7 +43,7 @@ export default function HeroSlider() {
         >
           <img src={slide.bg} alt={slide.title} className="hero-bg" />
           <div className="hero-overlay"></div>
-          <div className="container" style={{ position: 'relative', width: '100%' }}>
+          <div className="container" style={{ position: 'relative', width: '100%', zIndex: 2 }}>
             <div className="hero-content">
               <p className="hero-subtitle">{slide.subtitle}</p>
               <h1 className="hero-title">{slide.title}</h1>
