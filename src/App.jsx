@@ -14,15 +14,56 @@ import FaqAccordion from './components/FaqAccordion';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import AdminDashboard from './components/AdminDashboard';
+import Chatbot from './components/Chatbot';
+import UserPortal from './components/UserPortal';
+import OtpPopup from './components/OtpPopup';
 import { products as defaultProducts } from './data/products';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
 export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [productsList, setProductsList] = useState(defaultProducts);
   const [testimonialsList, setTestimonialsList] = useState([]);
   const [route, setRoute] = useState(window.location.hash || '');
+  const [user, setUser] = useState(null);
+  const [userPortalOpen, setUserPortalOpen] = useState(false);
+  const [otpPopupOpen, setOtpPopupOpen] = useState(false);
+
+  // Authenticate user session from token on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('seedink_user_token');
+      if (token) {
+        try {
+          const res = await fetch(`${API_BASE}/auth/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data);
+          } else {
+            localStorage.removeItem('seedink_user_token');
+            localStorage.removeItem('seedink_user_data');
+          }
+        } catch (e) {
+          console.log('User auth server connection issue.');
+        }
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
+  // Auto OTP popup after 4 seconds for non-logged-in users
+  useEffect(() => {
+    const stored = localStorage.getItem('seedink_user_token');
+    if (!stored) {
+      const timer = setTimeout(() => setOtpPopupOpen(true), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Hash Router setup
   useEffect(() => {
@@ -69,12 +110,27 @@ export default function App() {
     { id: 'minimalist', name: 'Minimalist & Fine-Line', icon: '🌱' }
   ];
 
-  // Filter products for the primary "Shop All" grid based on category selection
-  const displayedProducts = productsList.filter((prod) => {
-    if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'bestsellers') return prod.isBestseller;
-    return prod.category === selectedCategory;
-  });
+  // Filter products by tab and search query
+  const getTabProducts = () => {
+    let list = productsList;
+    if (searchQuery) {
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    if (activeTab === 'premium') return list.filter(p => p.isPremium);
+    if (activeTab === 'new-drops') return list.filter(p => p.isNewDrop || p.isNew);
+    if (activeTab === 'discounted') return list.filter(p => p.discountPercentage > 0).sort((a, b) => b.discountPercentage - a.discountPercentage);
+    if (activeTab === 'spiritual') return list.filter(p => p.category === 'spiritual');
+    return list;
+  };
+  const displayedProducts = getTabProducts();
+
+  const handleSearch = (q) => {
+    setSearchQuery(q);
+    if (q) setActiveTab('all');
+  };
 
   // If the admin route is active, render the Management Console instead
   if (route === '#admin') {
@@ -87,8 +143,23 @@ export default function App() {
 
   return (
     <div className="storefront-app">
+      {/* Email OTP Popup */}
+      {otpPopupOpen && (
+        <OtpPopup
+          onClose={() => setOtpPopupOpen(false)}
+          onLogin={(u) => {
+            setUser(u);
+            setOtpPopupOpen(false);
+          }}
+        />
+      )}
+
       {/* Navigation */}
-      <Navbar />
+      <Navbar
+        user={user}
+        onUserClick={() => user ? setUserPortalOpen(true) : setOtpPopupOpen(true)}
+        onSearch={handleSearch}
+      />
 
       {/* Hero Banner Slider */}
       <HeroSlider />
@@ -99,58 +170,51 @@ export default function App() {
         onSelectCategory={setSelectedCategory} 
       />
 
-      {/* Primary Products Grid (Shop All / Category Grid) */}
+      {/* Primary Products Grid with Tabs */}
       <section className="section-padding" id="shop-all">
         <div className="container">
-          {selectedCategory !== 'all' && selectedCategory !== 'bestsellers' ? (
-            // Single Category View
-            <>
-              <div className="section-header">
-                <p className="section-subtitle">Catalog</p>
-                <h2 className="section-title">
-                  {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Designs
-                </h2>
-              </div>
-              <div className="products-grid">
-                {displayedProducts.map((product) => (
-                  <ProductCard key={product.id || product._id} product={product} />
-                ))}
-              </div>
-            </>
-          ) : selectedCategory === 'bestsellers' ? (
-            // Bestsellers View
-            <>
-              <div className="section-header">
-                <p className="section-subtitle">Trending</p>
-                <h2 className="section-title">Bestseller Drops</h2>
-              </div>
-              <div className="products-grid">
-                {displayedProducts.map((product) => (
-                  <ProductCard key={product.id || product._id} product={product} />
-                ))}
-              </div>
-            </>
+          <div className="section-header" style={{ marginBottom: '24px' }}>
+            <p className="section-subtitle">🕉️ Sacred Collection</p>
+            <h2 className="section-title">Spiritual & Sacred Body Art</h2>
+          </div>
+
+          {/* Tab Bar */}
+          <div className="product-tabs">
+            {[
+              { id: 'all', label: '🕉️ All Designs' },
+              { id: 'premium', label: '👑 Premium' },
+              { id: 'new-drops', label: '✨ New Drops' },
+              { id: 'discounted', label: '🏷️ Discounted' },
+              { id: 'spiritual', label: '🔱 Spiritual' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                className={`product-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search result info */}
+          {searchQuery && (
+            <p className="search-results-headline">
+              Results for "<strong>{searchQuery}</strong>" — {displayedProducts.length} found
+            </p>
+          )}
+
+          {displayedProducts.length === 0 ? (
+            <div className="no-products">
+              <div style={{ fontSize: '3rem' }}>🔍</div>
+              <p>No designs found. Try another tab or search.</p>
+            </div>
           ) : (
-            // Segment-wise Category Grouping View
-            categoriesList.map((cat) => {
-              const catProds = productsList.filter(p => p.category === cat.id);
-              if (catProds.length === 0) return null;
-              return (
-                <div key={cat.id} className="category-segment" style={{ marginBottom: '56px' }}>
-                  <div className="section-header" style={{ marginBottom: '24px', textAlign: 'left' }}>
-                    <p className="section-subtitle" style={{ margin: 0, textAlign: 'left' }}>{cat.icon} Collection</p>
-                    <h3 className="section-title" style={{ textAlign: 'left', fontSize: '1.75rem', margin: '4px 0 0 0', textTransform: 'capitalize' }}>
-                      {cat.name}
-                    </h3>
-                  </div>
-                  <div className="products-grid">
-                    {catProds.map((product) => (
-                      <ProductCard key={product.id || product._id} product={product} />
-                    ))}
-                  </div>
-                </div>
-              );
-            })
+            <div className="products-grid">
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.id || product._id} product={product} />
+              ))}
+            </div>
           )}
         </div>
       </section>
@@ -274,6 +338,26 @@ export default function App() {
       {/* Global Shopping Drawer & Checkout */}
       <CartDrawer />
       <CheckoutModal />
+
+      {/* Floating Chatbot Assistant */}
+      <Chatbot />
+
+      {/* User Register/Login & Orders tracking portal */}
+      <UserPortal 
+        isOpen={userPortalOpen} 
+        onClose={() => setUserPortalOpen(false)} 
+        user={user} 
+        onLoginSuccess={(u) => {
+          setUser(u);
+          setUserPortalOpen(false);
+        }} 
+        onLogout={() => {
+          localStorage.removeItem('seedink_user_token');
+          localStorage.removeItem('seedink_user_data');
+          setUser(null);
+          setUserPortalOpen(false);
+        }} 
+      />
     </div>
   );
 }
