@@ -16,7 +16,7 @@ router.post('/create-intent', async (req, res) => {
     return res.status(400).json({ message: 'Missing order details' });
   }
 
-  const orderId = 'INK-' + Math.floor(Math.random() * 900000 + 100000);
+  const orderId = 'SED-' + Math.floor(Math.random() * 900000 + 100000);
 
   try {
     let clientSecret = '';
