@@ -275,15 +275,15 @@ export default function CheckoutModal() {
                     ))}
                   </div>
                   <div className="checkout-totals-block" style={{ marginTop: '16px' }}>
-                    <div style={{ display: 'flex', justifycontent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Subtotal</span>
                       <span style={{ marginLeft: 'auto' }}>₹{cartTotal}</span>
                     </div>
-                    <div style={{ display: 'flex', justifycontent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Shipping Fee</span>
                       <span style={{ marginLeft: 'auto' }}>{shippingCost === 0 ? 'FREE' : `₹${shippingCost}`}</span>
                     </div>
-                    <div style={{ display: 'flex', justifycontent: 'space-between', fontWeight: 'bold', fontSize: '1rem', borderTop: '1px dashed var(--color-border)', paddingTop: '10px', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1rem', borderTop: '1px dashed var(--color-border)', paddingTop: '10px', marginTop: '4px' }}>
                       <span>Grand Total</span>
                       <span style={{ marginLeft: 'auto' }}>₹{grandTotal}</span>
                     </div>
@@ -381,7 +381,7 @@ export default function CheckoutModal() {
                 Order ID: {orderId}
               </p>
               <p style={{ color: '#71717a', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto 24px auto' }}>
-                Thank you for shopping with INKUP! Your plant-based, semi-permanent tattoos will arrive within 3-5 business days. A tracking link has been sent to <strong>{shippingInfo.email}</strong>.
+                Thank you for shopping with SEEDINK! Your plant-based, semi-permanent tattoos will arrive within 3-5 business days. A tracking link has been sent to <strong>{shippingInfo.email}</strong>.
               </p>
               <button 
                 className="submit-btn" 
