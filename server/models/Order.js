@@ -8,6 +8,7 @@ const orderSchema = new mongoose.Schema({
   address: { type: String, required: true },
   city: { type: String, required: true },
   pincode: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   items: [
     {
       id: { type: String, required: true },
@@ -23,7 +24,10 @@ const orderSchema = new mongoose.Schema({
   grandTotal: { type: Number, required: true },
   paymentMethod: { type: String, required: true },
   paymentIntentId: { type: String },
-  paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' }
+  paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
+  orderStatus: { type: String, enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
+  trackingId: { type: String, default: '' },
+  carrier: { type: String, default: '' }
 }, { timestamps: true });
 
 export default mongoose.model('Order', orderSchema);
