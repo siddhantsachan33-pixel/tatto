@@ -10,23 +10,31 @@ export default function ProductCard({ product }) {
     addToCart(product);
   };
 
-  const discountPercent = Math.round(
+  const discountPercent = product.discountPercentage || Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100
   );
 
   return (
     <div className="product-card animate-fade-in">
       <div className="product-image-container">
-        {product.isBestseller && (
-          <span className="product-badge">Best Seller</span>
-        )}
-        {product.isNew && !product.isBestseller && (
-          <span className="product-badge sale">New</span>
-        )}
+        {/* Discount badge bottom-left */}
         {discountPercent > 0 && (
-          <span className="product-badge sale" style={{ right: '12px', left: 'auto' }}>
-            -{discountPercent}%
-          </span>
+          <span className="discount-badge">-{discountPercent}% OFF</span>
+        )}
+
+        {/* Premium badge top-right */}
+        {product.isPremium && (
+          <span className="premium-badge">👑 PREMIUM</span>
+        )}
+
+        {/* New Drop badge top-right (if not premium) */}
+        {!product.isPremium && product.isNewDrop && (
+          <span className="new-drop-badge">✨ NEW</span>
+        )}
+
+        {/* Bestseller badge (legacy fallback) */}
+        {!product.isPremium && !product.isNewDrop && product.isBestseller && (
+          <span className="product-badge">Best Seller</span>
         )}
 
         <img 
