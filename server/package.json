@@ -1,7 +1,7 @@
 {
-  "name": "inkup-backend",
+  "name": "seedink-backend",
   "version": "1.0.0",
-  "description": "Express backend for InkUp tattoo store connecting to MongoDB and Stripe",
+  "description": "Express backend for Seedink tattoo store connecting to MongoDB and Stripe",
   "main": "server.js",
   "type": "module",
   "scripts": {
