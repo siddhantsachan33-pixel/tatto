@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "node deploy.js",
-    "verify": "node verify.js"
+    "verify": "node verify.js",
+    "update-products": "node update_all_products.js",
+    "trigger-deploy": "node trigger_deploy.js"
   },
   "dependencies": {
     "react": "^18.3.1",
