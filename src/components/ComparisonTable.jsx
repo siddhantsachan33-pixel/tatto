@@ -14,7 +14,7 @@ export default function ComparisonTable() {
             <thead>
               <tr>
                 <th>Feature</th>
-                <th style={{ background: 'rgba(212, 175, 55, 0.08)' }}>INKUP Tattoos</th>
+                <th style={{ background: 'rgba(212, 175, 55, 0.08)' }}>SEEDINK Tattoos</th>
                 <th>Standard Stickers</th>
                 <th>Permanent Ink</th>
               </tr>
