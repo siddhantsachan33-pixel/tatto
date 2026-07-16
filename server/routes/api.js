@@ -3,14 +3,36 @@ import crypto from 'crypto';
 import Product from '../models/Product.js';
 import Testimonial from '../models/Testimonial.js';
 import Inquiry from '../models/Inquiry.js';
+import User from '../models/User.js';
+import Lead from '../models/Lead.js';
+import Order from '../models/Order.js';
 
 const router = express.Router();
 
-// Active administrative sessions store
+// Active sessions store
 const activeSessions = new Map();
+const activeUserSessions = new Map();
 
 // Helper to validate and clean incoming requests (prevent injection)
 const sanitizeString = (str) => typeof str === 'string' ? str.replace(/[$/{}]/g, '') : '';
+
+// Middleware to verify customer session tokens securely
+export const checkUser = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authorization header missing or invalid' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  const session = activeUserSessions.get(token);
+
+  if (!session) {
+    return res.status(401).json({ message: 'Session expired or invalid' });
+  }
+
+  req.userId = session.userId;
+  next();
+};
 
 // Middleware to verify session tokens securely
 export const checkAdmin = (req, res, next) => {
@@ -223,9 +245,215 @@ router.post('/inquiries', async (req, res) => {
     details: sanitizeString(details)
   });
 
+});
+
+/* ==========================================
+   CUSTOMER AUTHENTICATION ROUTES
+   ========================================== */
+
+// Customer Registration
+router.post('/auth/user/register', async (req, res) => {
+  const { name, email, password, phone, address, city, pincode } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Name, email, and password are required' });
+  }
+
   try {
-    const newInquiry = await inquiry.save();
-    res.status(201).json(newInquiry);
+    const existing = await User.findOne({ email: sanitizeString(email.toLowerCase()) });
+    if (existing) {
+      return res.status(400).json({ message: 'Account with this email already exists' });
+    }
+
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    const user = new User({
+      name: sanitizeString(name),
+      email: sanitizeString(email.toLowerCase()),
+      password: hashedPassword,
+      phone: phone ? sanitizeString(phone) : '',
+      address: address ? sanitizeString(address) : '',
+      city: city ? sanitizeString(city) : '',
+      pincode: pincode ? sanitizeString(pincode) : ''
+    });
+
+    const newUser = await user.save();
+    
+    // Generate secure session token
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    activeUserSessions.set(sessionToken, {
+      userId: newUser._id,
+      createdAt: Date.now()
+    });
+
+    res.status(201).json({
+      token: sessionToken,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        address: newUser.address,
+        city: newUser.city,
+        pincode: newUser.pincode
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Customer Login
+router.post('/auth/user/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    const user = await User.findOne({ email: sanitizeString(email.toLowerCase()) });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    if (user.password !== hashedPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate secure session token
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    activeUserSessions.set(sessionToken, {
+      userId: user._id,
+      createdAt: Date.now()
+    });
+
+    res.json({
+      token: sessionToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        city: user.city,
+        pincode: user.pincode
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Customer Profile
+router.get('/auth/user/profile', checkUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      city: user.city,
+      pincode: user.pincode
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Update Customer Profile
+router.put('/auth/user/profile', checkUser, async (req, res) => {
+  const { phone, address, city, pincode } = req.body;
+  try {
+    const updates = {};
+    if (phone !== undefined) updates.phone = sanitizeString(phone);
+    if (address !== undefined) updates.address = sanitizeString(address);
+    if (city !== undefined) updates.city = sanitizeString(city);
+    if (pincode !== undefined) updates.pincode = sanitizeString(pincode);
+
+    const user = await User.findByIdAndUpdate(req.userId, updates, { new: true });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      city: user.city,
+      pincode: user.pincode
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Customer Orders List
+router.get('/auth/user/orders', checkUser, async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.userId }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ==========================================
+   CHATBOT LEADS ROUTES
+   ========================================== */
+
+// Create a new lead from Chatbot
+router.post('/leads', async (req, res) => {
+  const { name, email, phone, tattooIdea, size, placement, chatHistory } = req.body;
+  if (!tattooIdea) {
+    return res.status(400).json({ message: 'Tattoo idea is required to capture lead.' });
+  }
+
+  try {
+    const lead = new Lead({
+      name: name ? sanitizeString(name) : 'Anonymous',
+      email: email ? sanitizeString(email) : '',
+      phone: phone ? sanitizeString(phone) : '',
+      tattooIdea: sanitizeString(tattooIdea),
+      size: size ? sanitizeString(size) : '',
+      placement: placement ? sanitizeString(placement) : '',
+      chatHistory: chatHistory || []
+    });
+
+    const newLead = await lead.save();
+    res.status(201).json(newLead);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Get all leads (Admin)
+router.get('/leads', checkAdmin, async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json(leads);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ==========================================
+   ADMIN ORDERS / COD MANAGEMENT ROUTES
+   ========================================== */
+
+// Update Order Status & Shipping details (Admin)
+router.put('/orders/:id/status', checkAdmin, async (req, res) => {
+  const { orderStatus, paymentStatus, trackingId, carrier } = req.body;
+  try {
+    const updates = {};
+    if (orderStatus) updates.orderStatus = sanitizeString(orderStatus);
+    if (paymentStatus) updates.paymentStatus = sanitizeString(paymentStatus);
+    if (trackingId !== undefined) updates.trackingId = sanitizeString(trackingId);
+    if (carrier !== undefined) updates.carrier = sanitizeString(carrier);
+
+    const updated = await Order.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Order not found' });
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
