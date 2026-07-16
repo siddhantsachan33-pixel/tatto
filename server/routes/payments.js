@@ -10,7 +10,7 @@ const sanitizeString = (str) => typeof str === 'string' ? str.replace(/[$/{}]/g,
 
 // Create a new Stripe Payment Intent & Order record
 router.post('/create-intent', async (req, res) => {
-  const { name, email, phone, address, city, pincode, items, subtotal, shippingCost, grandTotal, paymentMethod } = req.body;
+  const { name, email, phone, address, city, pincode, items, subtotal, shippingCost, grandTotal, paymentMethod, userId } = req.body;
   
   if (!name || !email || !items || !items.length) {
     return res.status(400).json({ message: 'Missing order details' });
@@ -40,6 +40,7 @@ router.post('/create-intent', async (req, res) => {
     // Save order details to MongoDB with a Pending state
     const order = new Order({
       orderId,
+      userId: userId || undefined,
       name: sanitizeString(name),
       email: sanitizeString(email),
       phone: sanitizeString(phone),
@@ -59,7 +60,8 @@ router.post('/create-intent', async (req, res) => {
       grandTotal: Number(grandTotal),
       paymentMethod: sanitizeString(paymentMethod),
       paymentIntentId,
-      paymentStatus: 'Pending'
+      paymentStatus: 'Pending',
+      orderStatus: 'Pending'
     });
 
     await order.save();
