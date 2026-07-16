@@ -11,7 +11,7 @@ export const CartProvider = ({ children }) => {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('inkup_cart');
+    const savedCart = localStorage.getItem('seedink_cart');
     if (savedCart) {
       try {
         setCartItems(JSON.parse(savedCart));
@@ -23,7 +23,7 @@ export const CartProvider = ({ children }) => {
 
   // Save cart to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem('inkup_cart', JSON.stringify(cartItems));
+    localStorage.setItem('seedink_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product, quantity = 1, customLetter = null) => {
