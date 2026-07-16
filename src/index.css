@@ -1,4 +1,4 @@
-/* Modern Minimalist & Premium Design System for InkUp */
+/* Modern Minimalist & Premium Design System for Seedink */
 :root {
   /* Colors */
   --color-dark: #0f0f11;
@@ -182,7 +182,7 @@ button {
 
 @media (max-width: 768px) {
   .nav-links {
-    display: none; /* simple burger menu / drawer or hide in mobile */
+    display: none;
   }
 }
 
@@ -270,12 +270,11 @@ button {
   gap: 16px;
   overflow-x: auto;
   white-space: nowrap;
-  scrollbar-width: none; /* Firefox */
-  padding-bottom: 4px;
+  scrollbar-width: none;
 }
 
 .category-bar::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none;
 }
 
 .category-item {
