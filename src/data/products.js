@@ -65,8 +65,8 @@ export const products = [
     originalPrice: 599,
     rating: 4.9,
     reviewsCount: 188,
-    image1: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=600',
-    image2: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=600',
+    image1: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&q=80&w=600',
     size: '3.5 x 3.5 inches',
     description: 'The iconic spiral seal of the Nine-Tailed Fox. Must-have body art for true anime fans.',
     isBestseller: true,
@@ -176,7 +176,7 @@ export const bundles = [
 
 export const faqs = [
   {
-    question: 'How long do INKUP semi-permanent tattoos last?',
+    question: 'How long do SEEDINK semi-permanent tattoos last?',
     answer: 'Our tattoos last anywhere from 1 to 2 weeks (10-14 days). The longevity depends on where you apply the tattoo and how well you take care of it during the first 24 hours.'
   },
   {
