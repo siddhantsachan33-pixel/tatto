@@ -83,8 +83,8 @@ const seedInitialData = async () => {
           originalPrice: 599,
           rating: 4.9,
           reviewsCount: 188,
-          image1: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&q=80&w=600',
-          image2: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&q=80&w=600',
+          image1: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=600',
+          image2: 'https://images.unsplash.com/photo-1605647540924-852290f6b0d5?auto=format&fit=crop&q=80&w=600',
           size: '3.5 x 3.5 inches',
           description: 'The iconic spiral seal of the Nine-Tailed Fox. Must-have body art for true anime fans.',
           isBestseller: true,
@@ -155,7 +155,7 @@ const seedInitialData = async () => {
 };
 
 // Database Connection
-const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/inkup';
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/seedink';
 mongoose.connect(mongoURI)
   .then(() => {
     console.log('MongoDB connection established successfully.');
