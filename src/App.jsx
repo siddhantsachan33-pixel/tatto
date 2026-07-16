@@ -61,6 +61,14 @@ export default function App() {
   }, [route]);
 
 
+  const categoriesList = [
+    { id: 'typography', name: 'Typography & Script', icon: '✍️' },
+    { id: 'spiritual', name: 'Spiritual & Sacred', icon: '🧘' },
+    { id: 'anime', name: 'Anime & Pop Culture', icon: '👾' },
+    { id: 'gothic', name: 'Gothic & Dark Art', icon: '💀' },
+    { id: 'minimalist', name: 'Minimalist & Fine-Line', icon: '🌱' }
+  ];
+
   // Filter products for the primary "Shop All" grid based on category selection
   const displayedProducts = productsList.filter((prod) => {
     if (selectedCategory === 'all') return true;
@@ -72,7 +80,7 @@ export default function App() {
   if (route === '#admin') {
     return (
       <AdminDashboard 
-        onClose={() => { window.location.hash = ''; }} 
+        onClose={() => { window.location.hash = 'shop-all'; }} 
       />
     );
   }
@@ -94,20 +102,56 @@ export default function App() {
       {/* Primary Products Grid (Shop All / Category Grid) */}
       <section className="section-padding" id="shop-all">
         <div className="container">
-          <div className="section-header">
-            <p className="section-subtitle">Catalog</p>
-            <h2 className="section-title">
-              {selectedCategory === 'all' 
-                ? 'Shop All Designs' 
-                : `${selectedCategory.toUpperCase()} Designs`}
-            </h2>
-          </div>
-
-          <div className="products-grid">
-            {displayedProducts.map((product) => (
-              <ProductCard key={product.id || product._id} product={product} />
-            ))}
-          </div>
+          {selectedCategory !== 'all' && selectedCategory !== 'bestsellers' ? (
+            // Single Category View
+            <>
+              <div className="section-header">
+                <p className="section-subtitle">Catalog</p>
+                <h2 className="section-title">
+                  {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Designs
+                </h2>
+              </div>
+              <div className="products-grid">
+                {displayedProducts.map((product) => (
+                  <ProductCard key={product.id || product._id} product={product} />
+                ))}
+              </div>
+            </>
+          ) : selectedCategory === 'bestsellers' ? (
+            // Bestsellers View
+            <>
+              <div className="section-header">
+                <p className="section-subtitle">Trending</p>
+                <h2 className="section-title">Bestseller Drops</h2>
+              </div>
+              <div className="products-grid">
+                {displayedProducts.map((product) => (
+                  <ProductCard key={product.id || product._id} product={product} />
+                ))}
+              </div>
+            </>
+          ) : (
+            // Segment-wise Category Grouping View
+            categoriesList.map((cat) => {
+              const catProds = productsList.filter(p => p.category === cat.id);
+              if (catProds.length === 0) return null;
+              return (
+                <div key={cat.id} className="category-segment" style={{ marginBottom: '56px' }}>
+                  <div className="section-header" style={{ marginBottom: '24px', textAlign: 'left' }}>
+                    <p className="section-subtitle" style={{ margin: 0, textAlign: 'left' }}>{cat.icon} Collection</p>
+                    <h3 className="section-title" style={{ textAlign: 'left', fontSize: '1.75rem', margin: '4px 0 0 0', textTransform: 'capitalize' }}>
+                      {cat.name}
+                    </h3>
+                  </div>
+                  <div className="products-grid">
+                    {catProds.map((product) => (
+                      <ProductCard key={product.id || product._id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </section>
 
@@ -120,7 +164,7 @@ export default function App() {
       {/* Visual Sizing Grid */}
       <SizeGrid />
 
-      {/* Custom Tattoo Care / How to Apply section (similar to inkup.co.in) */}
+      {/* Custom Tattoo Care / How to Apply section */}
       <section className="section-padding" id="how-to-apply" style={{ background: '#fafafa' }}>
         <div className="container">
           <div className="section-header">
@@ -176,7 +220,7 @@ export default function App() {
         <div className="container">
           <div className="footer-grid">
             <div className="footer-col">
-              <h2 className="footer-logo">INKUP</h2>
+              <h2 className="footer-logo">SEEDINK</h2>
               <p className="footer-text">
                 India's first pain-free, commitment-free semi-permanent body art brand. Zero needles. Zero regrets. Just beautiful body art that lasts 2 weeks.
               </p>
@@ -221,7 +265,7 @@ export default function App() {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; {new Date().getFullYear()} INKUP Body Art Inc. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} SEEDINK Body Art Inc. All rights reserved.</p>
             <p>Made with ❤️ in India. Semi-permanent MERN technology.</p>
           </div>
         </div>
