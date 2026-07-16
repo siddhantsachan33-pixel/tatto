@@ -135,6 +135,67 @@ export const products = [
     description: 'Elegant script lettering reading "wildflower" with a tiny blooming flower stem at the end.',
     isBestseller: false,
     isNew: true
+  },
+  // Shiva Spiritual Collection
+  {
+    id: 'p9',
+    name: 'Shiva Trishul',
+    category: 'spiritual',
+    price: 399,
+    originalPrice: 699,
+    rating: 4.9,
+    reviewsCount: 234,
+    image1: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    size: '4 x 2 inches',
+    description: 'The sacred Trishul (Trident) of Lord Shiva with damaru drum and serpent coiled around it. Symbol of destruction of evil and cosmic power.',
+    isBestseller: true,
+    isNew: true
+  },
+  {
+    id: 'p10',
+    name: 'Nataraja Dance',
+    category: 'spiritual',
+    price: 449,
+    originalPrice: 799,
+    rating: 4.9,
+    reviewsCount: 178,
+    image1: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
+    size: '5 x 4 inches',
+    description: 'Lord Shiva as Nataraja performing the cosmic dance of creation and destruction. Intricate linework capturing divine energy and movement.',
+    isBestseller: true,
+    isNew: false
+  },
+  {
+    id: 'p11',
+    name: "Shiva's Third Eye",
+    category: 'spiritual',
+    price: 329,
+    originalPrice: 599,
+    rating: 4.8,
+    reviewsCount: 156,
+    image1: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=600',
+    size: '3 x 2 inches',
+    description: "The all-seeing third eye of Mahadev with crescent moon and sacred Om symbol. Represents inner wisdom, enlightenment, and divine consciousness.",
+    isBestseller: false,
+    isNew: true
+  },
+  {
+    id: 'p12',
+    name: 'Mahadev Tilak',
+    category: 'spiritual',
+    price: 279,
+    originalPrice: 499,
+    rating: 4.7,
+    reviewsCount: 98,
+    image1: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?auto=format&fit=crop&q=80&w=600',
+    image2: 'https://images.unsplash.com/photo-1614093302611-8efc4de12964?auto=format&fit=crop&q=80&w=600',
+    size: '2 x 1.5 inches',
+    description: 'Sacred tripundra tilak lines with rudraksha beads and Om symbol. A minimalist tribute to Mahadev, perfect for forearms and wrists.',
+    isBestseller: false,
+    isNew: false
   }
 ];
 
