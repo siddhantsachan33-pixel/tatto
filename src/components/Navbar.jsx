@@ -21,7 +21,7 @@ export default function Navbar() {
           </button>
 
           {/* Centered Brand Logo */}
-          <a href="#shop-all" onClick={() => { window.location.hash = 'shop-all'; }} className="nav-logo">
+          <a href="/" className="nav-logo">
             INKUP
           </a>
 
