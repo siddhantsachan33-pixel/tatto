@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+const API_BASE = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? 'https://tatto-backend-4axz.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 export default function OtpPopup({ onClose, onLogin }) {
   const [step, setStep] = useState('email');
