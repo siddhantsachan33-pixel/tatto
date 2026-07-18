@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import HeroSlider from './components/HeroSlider';
 import CategoryBar from './components/CategoryBar';
+import StoryHighlights from './components/StoryHighlights';
 import ProductCard from './components/ProductCard';
 import TabbedCollection from './components/TabbedCollection';
 import InitialSelector from './components/InitialSelector';
@@ -17,9 +18,12 @@ import AdminDashboard from './components/AdminDashboard';
 import Chatbot from './components/Chatbot';
 import UserPortal from './components/UserPortal';
 import OtpPopup from './components/OtpPopup';
+import ProductDetailModal from './components/ProductDetailModal';
 import { products as defaultProducts } from './data/products';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+const API_BASE = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? 'https://tatto-backend-4axz.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -31,6 +35,38 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [userPortalOpen, setUserPortalOpen] = useState(false);
   const [otpPopupOpen, setOtpPopupOpen] = useState(false);
+  const [selectedDetailProduct, setSelectedDetailProduct] = useState(null);
+  const [showMoreLimit, setShowMoreLimit] = useState(2);
+
+  // Reset pagination limit on category or search query change
+  useEffect(() => {
+    setShowMoreLimit(2);
+  }, [activeTab, searchQuery]);
+
+  // Dynamically change browser tab favicon based on selected category/religion
+  useEffect(() => {
+    const FAVICON_MAP = {
+      all: '🔱',
+      hinduism: '🕉️',
+      islam: '🌙',
+      sikhism: '🪯',
+      buddhism: '☸️',
+      judaism: '✡️',
+      christianity: '✝️',
+      'new-drops': '🔥',
+      combo: '🎁',
+      discounted: '🏷️',
+      custom: '🎨'
+    };
+    const emoji = FAVICON_MAP[activeTab] || '🔱';
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${emoji}</text></svg>`;
+  }, [activeTab]);
 
   // Authenticate user session from token on mount
   useEffect(() => {
@@ -119,17 +155,23 @@ export default function App() {
         (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+    if (activeTab === 'all') return list;
     if (activeTab === 'premium') return list.filter(p => p.isPremium);
     if (activeTab === 'new-drops') return list.filter(p => p.isNewDrop || p.isNew);
     if (activeTab === 'discounted') return list.filter(p => p.discountPercentage > 0).sort((a, b) => b.discountPercentage - a.discountPercentage);
-    if (activeTab === 'spiritual') return list.filter(p => p.category === 'spiritual');
-    return list;
+    return list.filter(p => p.category === activeTab);
   };
   const displayedProducts = getTabProducts();
 
   const handleSearch = (q) => {
     setSearchQuery(q);
     if (q) setActiveTab('all');
+  };
+
+  const handleFooterClick = (tabId) => {
+    setActiveTab(tabId);
+    const el = document.getElementById('shop-all');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
   // If the admin route is active, render the Management Console instead
@@ -159,15 +201,19 @@ export default function App() {
         user={user}
         onUserClick={() => user ? setUserPortalOpen(true) : setOtpPopupOpen(true)}
         onSearch={handleSearch}
+        onSelectTab={setActiveTab}
       />
+
+      {/* Religion Story Highlights (Directly below header) */}
+      <StoryHighlights onSelectCategory={setActiveTab} />
 
       {/* Hero Banner Slider */}
       <HeroSlider />
 
       {/* Horizontal Category Nav */}
       <CategoryBar 
-        activeCategory={selectedCategory} 
-        onSelectCategory={setSelectedCategory} 
+        activeCategory={activeTab} 
+        onSelectCategory={setActiveTab} 
       />
 
       {/* Primary Products Grid with Tabs */}
@@ -176,25 +222,6 @@ export default function App() {
           <div className="section-header" style={{ marginBottom: '24px' }}>
             <p className="section-subtitle">🕉️ Sacred Collection</p>
             <h2 className="section-title">Spiritual & Sacred Body Art</h2>
-          </div>
-
-          {/* Tab Bar */}
-          <div className="product-tabs">
-            {[
-              { id: 'all', label: '🕉️ All Designs' },
-              { id: 'premium', label: '👑 Premium' },
-              { id: 'new-drops', label: '✨ New Drops' },
-              { id: 'discounted', label: '🏷️ Discounted' },
-              { id: 'spiritual', label: '🔱 Spiritual' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                className={`product-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
           </div>
 
           {/* Search result info */}
@@ -210,25 +237,46 @@ export default function App() {
               <p>No designs found. Try another tab or search.</p>
             </div>
           ) : (
-            <div className="products-grid">
-              {displayedProducts.map((product) => (
-                <ProductCard key={product.id || product._id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="products-grid">
+                {displayedProducts.slice(0, showMoreLimit).map((product) => (
+                  <ProductCard 
+                    key={product.id || product._id} 
+                    product={product} 
+                    onSelect={setSelectedDetailProduct}
+                  />
+                ))}
+              </div>
+              
+              {displayedProducts.length > showMoreLimit && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+                  <button 
+                    className="submit-btn animate-fade-in"
+                    onClick={() => setShowMoreLimit(prev => prev + 2)}
+                    style={{ 
+                      width: 'auto', 
+                      padding: '14px 48px', 
+                      background: 'transparent', 
+                      color: 'var(--color-dark)', 
+                      border: '2px solid var(--color-dark)',
+                      fontWeight: 'bold',
+                      fontSize: '0.95rem',
+                      letterSpacing: '1px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    See More
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
 
-      {/* Curated Tabbed Collections */}
-      <TabbedCollection products={productsList} />
-
-      {/* Custom Initials Widget */}
-      <InitialSelector />
-
-      {/* Visual Sizing Grid */}
-      <SizeGrid />
-
-      {/* Custom Tattoo Care / How to Apply section */}
+      {/* How to Apply Section (Important for customer success) */}
       <section className="section-padding" id="how-to-apply" style={{ background: '#fafafa' }}>
         <div className="container">
           <div className="section-header">
@@ -264,21 +312,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Curated Tattoo Bundles */}
-      <BundleSlider />
-
-      {/* Comparison Grid */}
-      <ComparisonTable />
-
-      {/* Testimonials */}
-      <Testimonials testimonials={testimonialsList.length > 0 ? testimonialsList : undefined} />
-
-      {/* Bulk/Corporate Order Forms */}
-      <BulkForm />
-
-      {/* FAQs */}
-      <FaqAccordion />
-
       {/* Footer */}
       <footer className="footer-wrapper">
         <div className="container">
@@ -293,20 +326,17 @@ export default function App() {
             <div className="footer-col">
               <h3 className="footer-heading">Collections</h3>
               <ul className="footer-links">
-                <li><a href="#shop-all">Shop All</a></li>
-                <li><a href="#tabbed-collection">Bestsellers</a></li>
-                <li><a href="#initial-selector">Custom Initials</a></li>
-                <li><a href="#bundles">Curated Bundles</a></li>
+                <li><a href="#shop-all" onClick={() => handleFooterClick('all')}>Shop All</a></li>
+                <li><a href="#shop-all" onClick={() => handleFooterClick('new-drops')}>New Arrivals</a></li>
+                <li><a href="#shop-all" onClick={() => handleFooterClick('custom')}>Custom Tattoo</a></li>
+                <li><a href="#shop-all" onClick={() => handleFooterClick('combo')}>Combo Deals</a></li>
               </ul>
             </div>
 
             <div className="footer-col">
               <h3 className="footer-heading">Company</h3>
               <ul className="footer-links">
-                <li><a href="#why-choose-us">How It Works</a></li>
-                <li><a href="#reviews">Testimonials</a></li>
-                <li><a href="#bulk-orders">Bulk Inquiry</a></li>
-                <li><a href="#faq">FAQs</a></li>
+                <li><a href="#how-to-apply">How It Works</a></li>
                 <li><a href="#admin" style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>Admin Console ⚙️</a></li>
               </ul>
             </div>
@@ -358,6 +388,13 @@ export default function App() {
           setUserPortalOpen(false);
         }} 
       />
+      {/* Product Detail & Placement Preview Modal */}
+      {selectedDetailProduct && (
+        <ProductDetailModal 
+          product={selectedDetailProduct} 
+          onClose={() => setSelectedDetailProduct(null)} 
+        />
+      )}
     </div>
   );
 }
