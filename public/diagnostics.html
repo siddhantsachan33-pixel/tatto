@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Diagnostics</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #111; color: #eee; }
+    pre { background: #222; padding: 15px; border-radius: 4px; border: 1px solid #444; overflow: auto; }
+    button { padding: 10px 20px; background: #e2a822; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h2>🔱 SEEDINK API Diagnostics</h2>
+  <button id="testBtn">Run Test</button>
+  <pre id="output">Click Run Test to diagnose backend connectivity...</pre>
+
+  <script>
+    document.getElementById('testBtn').addEventListener('click', async () => {
+      const output = document.getElementById('output');
+      output.textContent = 'Starting diagnostics...\n';
+      
+      const API_BASE = 'https://tatto-backend-4axz.onrender.com/api';
+      
+      // Test 1: Health Check
+      output.textContent += '\n1. Testing Health check... ';
+      try {
+        const res = await fetch('https://tatto-backend-4axz.onrender.com/health');
+        const text = await res.text();
+        output.textContent += `Status: ${res.status} | Response: ${text}\n`;
+      } catch (e) {
+        output.textContent += `FAILED: ${e.message}\n`;
+      }
+
+      // Test 2: Fetch Products
+      output.textContent += '2. Fetching existing products... ';
+      try {
+        const res = await fetch(`${API_BASE}/products`);
+        const json = await res.json();
+        output.textContent += `Status: ${res.status} | Found ${json.length} products\n`;
+      } catch (e) {
+        output.textContent += `FAILED: ${e.message}\n`;
+      }
+
+      // Test 3: Attempt Admin Login with default password 'admin123'
+      output.textContent += '3. Testing admin credentials... ';
+      let token = '';
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: 'admin123' })
+        });
+        const json = await res.json();
+        if (res.ok) {
+          token = json.token;
+          output.textContent += `SUCCESS | Token received: ${token.slice(0, 15)}...\n`;
+        } else {
+          output.textContent += `REJECTED: ${json.message}\n`;
+        }
+      } catch (e) {
+        output.textContent += `FAILED: ${e.message}\n`;
+      }
+    });
+  </script>
+</body>
+</html>
