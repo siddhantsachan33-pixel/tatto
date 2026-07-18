@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const API_BASE = IS_PROD
+  ? 'https://tatto-backend-4axz.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 
 export default function AdminDashboard({ onClose }) {
@@ -20,22 +23,48 @@ export default function AdminDashboard({ onClose }) {
   const [prodForm, setProdForm] = useState({
     id: null,
     name: '',
-    category: 'minimalist',
+    category: 'hinduism',
     price: '',
     originalPrice: '',
     size: '3 x 3 inches',
     description: '',
     image1: '',
     image2: '',
+    placementArm: '',
+    placementChest: '',
+    placementBack: '',
+    placementNeck: '',
+    placementHand: '',
     isBestseller: false,
     isNew: false
   });
   const [isEditingProd, setIsEditingProd] = useState(false);
 
-  // Validate session on load
+  const handleFileUpload = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      alert("Image is too large. Please upload an image smaller than 4MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProdForm(prev => ({ ...prev, [fieldName]: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Validate session on load — clear old-format tokens (no dot = old random hex)
   useEffect(() => {
     if (token) {
-      setIsAuthenticated(true);
+      // New HMAC tokens contain a '.' separator. Old random hex tokens don't.
+      if (!token.includes('.')) {
+        localStorage.removeItem('seedink_admin_token');
+        setToken('');
+        setIsAuthenticated(false);
+      } else {
+        setIsAuthenticated(true);
+      }
     }
   }, [token]);
 
@@ -143,19 +172,16 @@ export default function AdminDashboard({ onClose }) {
     
     try {
       let res;
-      if (isEditingProd && prodForm.id) {
-        res = await fetch(`${API_BASE}/products/${prodForm.id}`, {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(prodForm)
-        });
-      } else {
-        res = await fetch(`${API_BASE}/products`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(prodForm)
-        });
-      }
+      const targetUrl = isEditingProd && prodForm.id
+        ? `${API_BASE}/products/${prodForm.id}`
+        : `${API_BASE}/products`;
+      const method = isEditingProd && prodForm.id ? 'PUT' : 'POST';
+
+      res = await fetch(targetUrl, {
+        method,
+        headers,
+        body: JSON.stringify(prodForm)
+      });
 
       if (res.status === 401) {
         handleSessionExpired();
@@ -167,13 +193,18 @@ export default function AdminDashboard({ onClose }) {
         setProdForm({
           id: null,
           name: '',
-          category: 'minimalist',
+          category: 'hinduism',
           price: '',
           originalPrice: '',
           size: '3 x 3 inches',
           description: '',
           image1: '',
           image2: '',
+          placementArm: '',
+          placementChest: '',
+          placementBack: '',
+          placementNeck: '',
+          placementHand: '',
           isBestseller: false,
           isNew: false
         });
@@ -181,10 +212,10 @@ export default function AdminDashboard({ onClose }) {
         fetchData('products');
       } else {
         const errData = await res.json();
-        alert(`Error saving product: ${errData.message}`);
+        alert(`Error saving product: ${errData.message}\n(HTTP ${res.status})`);
       }
     } catch (err) {
-      alert('Network error while saving product.');
+      alert(`Network error while saving product.\n\nURL: ${API_BASE}/products\nError: ${err.message}\n\nPlease check if your PowerShell deployment finished correctly.`);
     }
   };
 
@@ -199,6 +230,11 @@ export default function AdminDashboard({ onClose }) {
       description: prod.description,
       image1: prod.image1,
       image2: prod.image2,
+      placementArm: prod.placementArm || '',
+      placementChest: prod.placementChest || '',
+      placementBack: prod.placementBack || '',
+      placementNeck: prod.placementNeck || '',
+      placementHand: prod.placementHand || '',
       isBestseller: prod.isBestseller,
       isNew: prod.isNew
     });
@@ -392,11 +428,12 @@ export default function AdminDashboard({ onClose }) {
                       value={prodForm.category}
                       onChange={(e) => setProdForm({ ...prodForm, category: e.target.value })}
                     >
-                      <option value="minimalist">Minimalist</option>
-                      <option value="spiritual">Spiritual</option>
-                      <option value="anime">Anime & Pop</option>
-                      <option value="gothic">Gothic & Dark</option>
-                      <option value="typography">Typography</option>
+                      <option value="hinduism">Hinduism</option>
+                      <option value="islam">Islam</option>
+                      <option value="sikhism">Sikhism</option>
+                      <option value="buddhism">Buddhism</option>
+                      <option value="judaism">Judaism</option>
+                      <option value="christianity">Christianity</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -444,28 +481,188 @@ export default function AdminDashboard({ onClose }) {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Image 1 URL *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={prodForm.image1}
-                    onChange={(e) => setProdForm({ ...prodForm, image1: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                    required
-                  />
+                {/* Image upload section */}
+                <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-dark)', margin: '20px 0 10px 0', borderBottom: '1px solid var(--color-border)', paddingBottom: '6px' }}>
+                  🖼️ Product Images & Placements
+                </h4>
+
+                {/* 1. Main Image */}
+                <div style={{ background: '#f9f9fb', border: '1px solid #e4e4e7', padding: '12px', borderRadius: '6px', marginBottom: '14px' }}>
+                  <label className="form-label" style={{ fontWeight: 'bold' }}>Main Design Art (Image 1) *</label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', margin: '6px 0' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ margin: 0, flex: 1 }}
+                      value={prodForm.image1}
+                      onChange={(e) => setProdForm({ ...prodForm, image1: e.target.value })}
+                      placeholder="Paste Image URL or select file →"
+                      required
+                    />
+                    <label style={{ padding: '10px 14px', background: 'var(--color-dark)', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
+                      📁 Upload
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        style={{ display: 'none' }} 
+                        onChange={(e) => handleFileUpload(e, 'image1')} 
+                      />
+                    </label>
+                  </div>
+                  {prodForm.image1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                      <img src={prodForm.image1} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
+                      <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 'bold' }}>✓ Loaded successfully</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Image 2 URL (Hover State) *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={prodForm.image2}
-                    onChange={(e) => setProdForm({ ...prodForm, image2: e.target.value })}
-                    placeholder="https://example.com/hover.jpg"
-                    required
-                  />
+                {/* 2. Hover Image */}
+                <div style={{ background: '#f9f9fb', border: '1px solid #e4e4e7', padding: '12px', borderRadius: '6px', marginBottom: '14px' }}>
+                  <label className="form-label" style={{ fontWeight: 'bold' }}>Hover View Art (Image 2) *</label>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', margin: '6px 0' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ margin: 0, flex: 1 }}
+                      value={prodForm.image2}
+                      onChange={(e) => setProdForm({ ...prodForm, image2: e.target.value })}
+                      placeholder="Paste Image URL or select file →"
+                      required
+                    />
+                    <label style={{ padding: '10px 14px', background: 'var(--color-dark)', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
+                      📁 Upload
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        style={{ display: 'none' }} 
+                        onChange={(e) => handleFileUpload(e, 'image2')} 
+                      />
+                    </label>
+                  </div>
+                  {prodForm.image2 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                      <img src={prodForm.image2} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
+                      <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 'bold' }}>✓ Loaded successfully</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Body part placements sub-form */}
+                <div style={{ background: '#f4f4f5', padding: '16px', borderRadius: '8px', border: '1px dashed #d4d4d8', marginBottom: '14px' }}>
+                  <p style={{ fontSize: '0.78rem', fontWeight: '800', color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+                    💪 Model Body part Placements (Circles Preview)
+                  </p>
+
+                  {/* 1. Arm Placement */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Forearm Preview</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ margin: 0, flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                        value={prodForm.placementArm}
+                        onChange={(e) => setProdForm({ ...prodForm, placementArm: e.target.value })}
+                        placeholder="Arm placement URL..."
+                      />
+                      <label style={{ padding: '8px 12px', background: '#3f3f46', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Upload
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'placementArm')} />
+                      </label>
+                    </div>
+                    {prodForm.placementArm && (
+                      <img src={prodForm.placementArm} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #ccc', marginTop: '4px' }} />
+                    )}
+                  </div>
+
+                  {/* 2. Chest Placement */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Chest / Shoulder Preview</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ margin: 0, flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                        value={prodForm.placementChest}
+                        onChange={(e) => setProdForm({ ...prodForm, placementChest: e.target.value })}
+                        placeholder="Chest placement URL..."
+                      />
+                      <label style={{ padding: '8px 12px', background: '#3f3f46', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Upload
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'placementChest')} />
+                      </label>
+                    </div>
+                    {prodForm.placementChest && (
+                      <img src={prodForm.placementChest} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #ccc', marginTop: '4px' }} />
+                    )}
+                  </div>
+
+                  {/* 3. Back Placement */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Back / Spine Preview</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ margin: 0, flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                        value={prodForm.placementBack}
+                        onChange={(e) => setProdForm({ ...prodForm, placementBack: e.target.value })}
+                        placeholder="Back placement URL..."
+                      />
+                      <label style={{ padding: '8px 12px', background: '#3f3f46', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Upload
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'placementBack')} />
+                      </label>
+                    </div>
+                    {prodForm.placementBack && (
+                      <img src={prodForm.placementBack} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #ccc', marginTop: '4px' }} />
+                    )}
+                  </div>
+
+                  {/* 4. Neck Placement */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Neck Preview</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ margin: 0, flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                        value={prodForm.placementNeck}
+                        onChange={(e) => setProdForm({ ...prodForm, placementNeck: e.target.value })}
+                        placeholder="Neck placement URL..."
+                      />
+                      <label style={{ padding: '8px 12px', background: '#3f3f46', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Upload
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'placementNeck')} />
+                      </label>
+                    </div>
+                    {prodForm.placementNeck && (
+                      <img src={prodForm.placementNeck} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #ccc', marginTop: '4px' }} />
+                    )}
+                  </div>
+
+                  {/* 5. Hand Placement */}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-dark)' }}>Hand Back Preview</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ margin: 0, flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                        value={prodForm.placementHand}
+                        onChange={(e) => setProdForm({ ...prodForm, placementHand: e.target.value })}
+                        placeholder="Hand placement URL..."
+                      />
+                      <label style={{ padding: '8px 12px', background: '#3f3f46', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                        📁 Upload
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, 'placementHand')} />
+                      </label>
+                    </div>
+                    {prodForm.placementHand && (
+                      <img src={prodForm.placementHand} style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '50%', border: '1px solid #ccc', marginTop: '4px' }} />
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '20px', margin: '14px 0' }}>
@@ -500,13 +697,18 @@ export default function AdminDashboard({ onClose }) {
                       setProdForm({
                         id: null,
                         name: '',
-                        category: 'minimalist',
+                        category: 'hinduism',
                         price: '',
                         originalPrice: '',
                         size: '3 x 3 inches',
                         description: '',
                         image1: '',
                         image2: '',
+                        placementArm: '',
+                        placementChest: '',
+                        placementBack: '',
+                        placementNeck: '',
+                        placementHand: '',
                         isBestseller: false,
                         isNew: false
                       });
