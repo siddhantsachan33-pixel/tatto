@@ -67,7 +67,9 @@ export default function Chatbot() {
 
       // Submit lead to backend
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
+        const API_BASE = (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+          ? 'https://tatto-backend-4axz.onrender.com/api'
+          : 'http://localhost:5000/api';
         await fetch(`${API_BASE}/leads`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
