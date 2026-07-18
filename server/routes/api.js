@@ -9,52 +9,68 @@ import Order from '../models/Order.js';
 
 const router = express.Router();
 
-// Active sessions store
-const activeSessions = new Map();
-const activeUserSessions = new Map();
+// ── STATELESS HMAC TOKEN HELPERS ─────────────────────────────────────────────
+// Tokens are self-validating (signed with a secret key).
+// No server-side Map storage = sessions survive Render restarts/sleep cycles.
+
+const TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || 'seedink_secret_2026';
+const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+function signAdminToken(payload) {
+  const data = JSON.stringify(payload);
+  const encoded = Buffer.from(data).toString('base64url');
+  const sig = crypto.createHmac('sha256', TOKEN_SECRET).update(encoded).digest('base64url');
+  return `${encoded}.${sig}`;
+}
+
+function verifyAdminToken(token) {
+  try {
+    const [encoded, sig] = token.split('.');
+    if (!encoded || !sig) return null;
+    const expectedSig = crypto.createHmac('sha256', TOKEN_SECRET).update(encoded).digest('base64url');
+    const sigBuf = Buffer.from(sig, 'base64url');
+    const expBuf = Buffer.from(expectedSig, 'base64url');
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return null;
+    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString());
+    if (Date.now() > payload.exp) return null; // expired
+    return payload;
+  } catch {
+    return null;
+  }
+}
 
 // Helper to validate and clean incoming requests (prevent injection)
 const sanitizeString = (str) => typeof str === 'string' ? str.replace(/[$/{}]/g, '') : '';
 
-// Middleware to verify customer session tokens securely
+// In-memory user session store (customers only; these are short-lived)
+const activeUserSessions = new Map();
+
+// Middleware to verify customer session tokens
 export const checkUser = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Authorization header missing or invalid' });
   }
-
   const token = authHeader.split(' ')[1];
   const session = activeUserSessions.get(token);
-
   if (!session) {
     return res.status(401).json({ message: 'Session expired or invalid' });
   }
-
   req.userId = session.userId;
   next();
 };
 
-// Middleware to verify session tokens securely
+// Middleware to verify ADMIN tokens (stateless HMAC - survives restarts)
 export const checkAdmin = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Authorization header missing or invalid' });
   }
-
   const token = authHeader.split(' ')[1];
-  const session = activeSessions.get(token);
-
-  if (!session) {
-    return res.status(401).json({ message: 'Session expired or invalid' });
+  const payload = verifyAdminToken(token);
+  if (!payload) {
+    return res.status(401).json({ message: 'Admin session expired or invalid. Please log in again.' });
   }
-
-  // Check if session has expired (e.g. 2 hours limit)
-  if (Date.now() - session.createdAt > 2 * 60 * 60 * 1000) {
-    activeSessions.delete(token);
-    return res.status(401).json({ message: 'Session expired' });
-  }
-
-  // Session valid - proceed
   next();
 };
 
@@ -62,7 +78,7 @@ export const checkAdmin = (req, res, next) => {
    AUTH ROUTES
    ========================================== */
 
-// Admin secure login using SHA-256 password hashing
+// Admin login — returns a stateless HMAC-signed token valid for 30 days
 router.post('/auth/login', (req, res) => {
   const { password } = req.body;
   if (!password) {
@@ -71,33 +87,21 @@ router.post('/auth/login', (req, res) => {
 
   const configuredPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
-  // Compare using timing-safe comparison to prevent side-channel attacks
   const inputHash = crypto.createHash('sha256').update(password).digest('hex');
   const targetHash = crypto.createHash('sha256').update(configuredPassword).digest('hex');
-
   const inputBuffer = Buffer.from(inputHash, 'utf-8');
   const targetBuffer = Buffer.from(targetHash, 'utf-8');
 
   if (inputBuffer.length === targetBuffer.length && crypto.timingSafeEqual(inputBuffer, targetBuffer)) {
-    // Generate secure session token
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-    activeSessions.set(sessionToken, {
-      createdAt: Date.now()
-    });
-    
-    return res.json({ token: sessionToken });
+    const token = signAdminToken({ role: 'admin', iat: Date.now(), exp: Date.now() + TOKEN_TTL_MS });
+    return res.json({ token });
   }
 
   return res.status(401).json({ message: 'Invalid admin password' });
 });
 
-// Admin secure logout
+// Admin logout (client just discards the token; nothing to delete server-side)
 router.post('/auth/logout', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    activeSessions.delete(token);
-  }
   res.json({ message: 'Logged out successfully' });
 });
 
@@ -117,7 +121,10 @@ router.get('/products', async (req, res) => {
 
 // Create product (Admin)
 router.post('/products', checkAdmin, async (req, res) => {
-  const { name, category, price, originalPrice, size, description, image1, image2, isBestseller, isNew } = req.body;
+  const { 
+    name, category, price, originalPrice, size, description, image1, image2, 
+    isBestseller, isNew, placementArm, placementChest, placementBack, placementNeck, placementHand 
+  } = req.body;
   
   if (!name || !category || !price || !description || !image1 || !image2) {
     return res.status(400).json({ message: 'Required fields are missing' });
@@ -133,7 +140,12 @@ router.post('/products', checkAdmin, async (req, res) => {
     image1: image1,
     image2: image2,
     isBestseller: Boolean(isBestseller),
-    isNew: Boolean(isNew)
+    isNew: Boolean(isNew),
+    placementArm: placementArm ? String(placementArm) : '',
+    placementChest: placementChest ? String(placementChest) : '',
+    placementBack: placementBack ? String(placementBack) : '',
+    placementNeck: placementNeck ? String(placementNeck) : '',
+    placementHand: placementHand ? String(placementHand) : ''
   });
 
   try {
