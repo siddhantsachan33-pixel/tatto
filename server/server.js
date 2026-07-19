@@ -11,14 +11,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS — allow all Cloudflare Pages deployments + localhost for dev
+// CORS — dynamically mirror request origin to allow all sites (localhost, CF pages, etc.)
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // server-to-server, Postman
-    if (origin.endsWith('.pages.dev')) return callback(null, true); // any CF Pages
-    if (origin.endsWith('.cloudflare.com')) return callback(null, true);
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) return callback(null, true);
-    return callback(new Error('CORS blocked: ' + origin), false);
+    // Mirror the requesting origin dynamically so all domains can fetch & upload
+    callback(null, true);
   },
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
