@@ -124,7 +124,8 @@ router.get('/products', async (req, res) => {
 router.post('/products', checkAdmin, async (req, res) => {
   const { 
     name, category, price, originalPrice, size, description, image1, image2, 
-    isBestseller, isNew, placementArm, placementChest, placementBack, placementNeck, placementHand 
+    isBestseller, isNew, placementArm, placementChest, placementBack, placementNeck, placementHand,
+    variants
   } = req.body;
   
   if (!name || !category || !price || !description || !image1 || !image2) {
@@ -146,7 +147,8 @@ router.post('/products', checkAdmin, async (req, res) => {
     placementChest: placementChest ? String(placementChest) : '',
     placementBack: placementBack ? String(placementBack) : '',
     placementNeck: placementNeck ? String(placementNeck) : '',
-    placementHand: placementHand ? String(placementHand) : ''
+    placementHand: placementHand ? String(placementHand) : '',
+    variants: variants || []
   });
 
   try {
