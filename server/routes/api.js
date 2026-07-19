@@ -6,6 +6,7 @@ import Inquiry from '../models/Inquiry.js';
 import User from '../models/User.js';
 import Lead from '../models/Lead.js';
 import Order from '../models/Order.js';
+import TeamMember from '../models/TeamMember.js';
 
 const router = express.Router();
 
@@ -198,8 +199,8 @@ router.get('/testimonials', async (req, res) => {
   }
 });
 
-router.post('/testimonials', async (req, res) => {
-  const { name, stars, text, verified } = req.body;
+router.post('/testimonials', checkAdmin, async (req, res) => {
+  const { name, stars, text, verified, image } = req.body;
   
   if (!name || !text) {
     return res.status(400).json({ message: 'Author name and review text are required' });
@@ -207,14 +208,30 @@ router.post('/testimonials', async (req, res) => {
 
   const testimonial = new Testimonial({
     name: sanitizeString(name),
-    stars: sanitizeString(stars),
+    stars: stars ? sanitizeString(stars) : '★★★★★',
     text: sanitizeString(text),
-    verified: Boolean(verified)
+    verified: verified !== undefined ? Boolean(verified) : true,
+    image: image ? String(image) : ''
   });
 
   try {
     const newTestimonial = await testimonial.save();
     res.status(201).json(newTestimonial);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.put('/testimonials/:id', checkAdmin, async (req, res) => {
+  try {
+    const updates = { ...req.body };
+    if (updates.name) updates.name = sanitizeString(updates.name);
+    if (updates.text) updates.text = sanitizeString(updates.text);
+    if (updates.stars) updates.stars = sanitizeString(updates.stars);
+
+    const updated = await Testimonial.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Testimonial not found' });
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -468,6 +485,69 @@ router.put('/orders/:id/status', checkAdmin, async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+/* ==========================================
+   OUR TEAM ROUTES
+   ========================================== */
+
+// Get all team members (Public)
+router.get('/team', async (req, res) => {
+  try {
+    const members = await TeamMember.find().sort({ createdAt: 1 });
+    res.json(members);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Create team member (Admin)
+router.post('/team', checkAdmin, async (req, res) => {
+  const { name, role, bio, image } = req.body;
+  if (!name || !role || !bio || !image) {
+    return res.status(400).json({ message: 'Name, role, bio, and image are required' });
+  }
+
+  const member = new TeamMember({
+    name: sanitizeString(name),
+    role: sanitizeString(role),
+    bio: sanitizeString(bio),
+    image: String(image)
+  });
+
+  try {
+    const newMember = await member.save();
+    res.status(201).json(newMember);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Update team member (Admin)
+router.put('/team/:id', checkAdmin, async (req, res) => {
+  try {
+    const updates = { ...req.body };
+    if (updates.name) updates.name = sanitizeString(updates.name);
+    if (updates.role) updates.role = sanitizeString(updates.role);
+    if (updates.bio) updates.bio = sanitizeString(updates.bio);
+
+    const updated = await TeamMember.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Team member not found' });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Delete team member (Admin)
+router.delete('/team/:id', checkAdmin, async (req, res) => {
+  try {
+    const deleted = await TeamMember.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Team member not found' });
+    res.json({ message: 'Team member deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
