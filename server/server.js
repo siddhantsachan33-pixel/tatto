@@ -39,9 +39,12 @@ import Testimonial from './models/Testimonial.js';
 
 const seedInitialData = async () => {
   try {
-    // Delete existing products to force database update with new tattoo-only images and Shiva collection
-    await Product.deleteMany({});
-    console.log('Cleared existing products for database refresh.');
+    const productsCount = await Product.countDocuments();
+    if (productsCount > 0) {
+      console.log('Database already has products. Skipping initial seeding.');
+      return;
+    }
+    console.log('Database empty. Seeding initial products...');
 
     const defaultProducts = [
       // 1. Hinduism
@@ -625,7 +628,6 @@ const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/seedink';
 mongoose.connect(mongoURI)
   .then(() => {
     console.log('MongoDB connection established successfully.');
-    seedInitialData();
     const server = app.listen(PORT, () => {
       console.log(`Backend server is running on port ${PORT}`);
 
