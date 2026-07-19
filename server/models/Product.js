@@ -17,7 +17,15 @@ const productSchema = new mongoose.Schema({
   size: { type: String, default: '3 x 3 inches' },
   description: { type: String, required: true },
   isBestseller: { type: Boolean, default: false },
-  isNew: { type: Boolean, default: false }
+  isNew: { type: Boolean, default: false },
+  variants: [
+    {
+      size: { type: String, required: true }, // e.g. "S — 2 x 2 in"
+      price: { type: Number, required: true }, // e.g. 299
+      originalPrice: { type: Number }, // e.g. 399
+      placement: { type: String, required: true } // e.g. "Arm", "Chest", "Back", "Neck", "Hand"
+    }
+  ]
 }, { timestamps: true });
 
 export default mongoose.model('Product', productSchema);
